@@ -1,0 +1,11 @@
+# Copy this file to terraform.tfvars and fill in your values
+# terraform.tfvars is gitignored
+
+project_id  = "your-gcp-project-id"
+region      = "me-central1"
+environment = "dev"
+db_tier     = "db-f1-micro"
+db_password = "your-secure-database-password"
+jwt_secret  = "your-jwt-secret-at-least-32-characters-long"
+cors_origin = "*"
+

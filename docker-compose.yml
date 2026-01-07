@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  # PostgreSQL database for local development
+  postgres:
+    image: postgres:15-alpine
+    container_name: adventure-roulette-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: adventure_roulette
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Backend service (optional - for testing Docker build locally)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: adventure-roulette-backend
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      HOST: 0.0.0.0
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/adventure_roulette?schema=public
+      JWT_SECRET: local-dev-secret-key-at-least-32-chars
+      JWT_ACCESS_EXPIRES_IN: 15m
+      JWT_REFRESH_EXPIRES_IN: 7d
+      CORS_ORIGIN: '*'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles:
+      - full
+
+volumes:
+  postgres_data:
+
