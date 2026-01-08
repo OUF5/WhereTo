@@ -16,11 +16,13 @@ declare module '@fastify/jwt' {
       userId: string;
       tenantId: string;
       role: string;
+      type?: 'refresh';  // Optional: only present on refresh tokens
     };
     user: {
       userId: string;
       tenantId: string;
       role: string;
+      type?: 'refresh';
     };
   }
 }
