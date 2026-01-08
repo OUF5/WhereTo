@@ -1,4 +1,5 @@
 steps:
+  # ============== BACKEND ==============
   # Step 1: Install backend dependencies
   - name: 'node:20'
     entrypoint: 'npm'
@@ -30,7 +31,7 @@ steps:
     id: 'build-backend'
     waitFor: ['lint-backend']
 
-  # Step 5: Build Docker image
+  # Step 5: Build backend Docker image
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
@@ -39,23 +40,23 @@ steps:
       - '-t'
       - '${_REGION}-docker.pkg.dev/$PROJECT_ID/adventure-roulette/backend:latest'
       - './backend'
-    id: 'docker-build'
+    id: 'docker-build-backend'
     waitFor: ['build-backend']
 
-  # Step 6: Push Docker image
+  # Step 6: Push backend Docker image
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
       - '${_REGION}-docker.pkg.dev/$PROJECT_ID/adventure-roulette/backend:$SHORT_SHA'
-    id: 'docker-push-sha'
-    waitFor: ['docker-build']
+    id: 'docker-push-backend-sha'
+    waitFor: ['docker-build-backend']
 
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
       - '${_REGION}-docker.pkg.dev/$PROJECT_ID/adventure-roulette/backend:latest'
-    id: 'docker-push-latest'
-    waitFor: ['docker-build']
+    id: 'docker-push-backend-latest'
+    waitFor: ['docker-build-backend']
 
   # Step 7: Run database migrations
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -73,9 +74,9 @@ steps:
         npm ci
         npx prisma migrate deploy
     id: 'db-migrate'
-    waitFor: ['docker-push-sha']
+    waitFor: ['docker-push-backend-sha']
 
-  # Step 8: Deploy to Cloud Run
+  # Step 8: Deploy backend to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     args:
       - 'run'
@@ -84,11 +85,56 @@ steps:
       - '--image=${_REGION}-docker.pkg.dev/$PROJECT_ID/adventure-roulette/backend:$SHORT_SHA'
       - '--region=${_REGION}'
       - '--platform=managed'
-    id: 'deploy'
-    waitFor: ['db-migrate', 'docker-push-latest']
+    id: 'deploy-backend'
+    waitFor: ['db-migrate', 'docker-push-backend-latest']
+
+  # ============== FRONTEND ==============
+  # Step 9: Build frontend Docker image (runs in parallel with backend)
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_API_URL=${_BACKEND_URL}/v1'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/adventure-roulette/frontend:$SHORT_SHA'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/adventure-roulette/frontend:latest'
+      - './frontend'
+    id: 'docker-build-frontend'
+    waitFor: ['-']  # Start immediately (parallel with backend)
+
+  # Step 10: Push frontend Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/adventure-roulette/frontend:$SHORT_SHA'
+    id: 'docker-push-frontend-sha'
+    waitFor: ['docker-build-frontend']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/adventure-roulette/frontend:latest'
+    id: 'docker-push-frontend-latest'
+    waitFor: ['docker-build-frontend']
+
+  # Step 11: Deploy frontend to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'adventure-roulette-frontend'
+      - '--image=${_REGION}-docker.pkg.dev/$PROJECT_ID/adventure-roulette/frontend:$SHORT_SHA'
+      - '--region=${_REGION}'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--set-env-vars=NODE_ENV=production'
+    id: 'deploy-frontend'
+    waitFor: ['docker-push-frontend-sha', 'docker-push-frontend-latest']
 
 substitutions:
-  _REGION: 'me-central1'
+  _REGION: 'europe-west1'
+  _BACKEND_URL: 'https://whereto-815906657624.europe-west1.run.app'
 
 options:
   logging: CLOUD_LOGGING_ONLY

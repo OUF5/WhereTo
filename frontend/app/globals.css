@@ -1,0 +1,207 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== BASE STYLES ===== */
+:root {
+  --pixel-bg-dark: #0a0a12;
+  --pixel-bg-blue: #1a1a4e;
+  --pixel-primary: #00d4ff;
+  --pixel-secondary: #ff6b35;
+  --pixel-success: #39ff14;
+  --pixel-danger: #ff073a;
+  --pixel-gold: #ffd700;
+  --pixel-text: #e0e0e0;
+  --pixel-muted: #6b7280;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background-color: var(--pixel-bg-dark);
+}
+
+body {
+  font-family: 'VT323', monospace;
+  background-color: var(--pixel-bg-dark);
+  color: var(--pixel-text);
+  min-height: 100vh;
+  font-size: 18px;
+  letter-spacing: 0.05em;
+}
+
+/* ===== CRT SCREEN EFFECTS ===== */
+.crt-screen {
+  position: relative;
+  overflow: hidden;
+}
+
+.crt-screen::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%,
+    rgba(0, 0, 0, 0.15) 50%
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.crt-screen::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 0%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
+  pointer-events: none;
+  z-index: 11;
+}
+
+/* ===== PIXEL BORDER UTILITIES ===== */
+.pixel-border {
+  border: 4px solid currentColor;
+  box-shadow: 
+    4px 4px 0 0 currentColor,
+    -2px -2px 0 0 var(--pixel-bg-dark) inset;
+}
+
+.pixel-border-thin {
+  border: 2px solid currentColor;
+  box-shadow: 2px 2px 0 0 currentColor;
+}
+
+/* ===== 8-BIT STYLE CORNERS ===== */
+.pixel-corners {
+  clip-path: polygon(
+    0 8px,
+    8px 8px,
+    8px 0,
+    calc(100% - 8px) 0,
+    calc(100% - 8px) 8px,
+    100% 8px,
+    100% calc(100% - 8px),
+    calc(100% - 8px) calc(100% - 8px),
+    calc(100% - 8px) 100%,
+    8px 100%,
+    8px calc(100% - 8px),
+    0 calc(100% - 8px)
+  );
+}
+
+/* ===== GLOW EFFECTS ===== */
+.glow-cyan {
+  text-shadow: 0 0 10px var(--pixel-primary), 0 0 20px var(--pixel-primary);
+}
+
+.glow-green {
+  text-shadow: 0 0 10px var(--pixel-success), 0 0 20px var(--pixel-success);
+}
+
+.glow-red {
+  text-shadow: 0 0 10px var(--pixel-danger), 0 0 20px var(--pixel-danger);
+}
+
+.glow-gold {
+  text-shadow: 0 0 10px var(--pixel-gold), 0 0 20px var(--pixel-gold);
+}
+
+/* ===== ARCADE TEXT STYLES ===== */
+.arcade-title {
+  font-family: 'Press Start 2P', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.arcade-text {
+  font-family: 'VT323', monospace;
+  letter-spacing: 0.05em;
+}
+
+/* ===== SCANLINE ANIMATION ===== */
+.scanline-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 212, 255, 0.03) 50%,
+    transparent 100%
+  );
+  animation: scanline 8s linear infinite;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* ===== INPUT STYLES ===== */
+input::placeholder,
+textarea::placeholder {
+  color: var(--pixel-muted);
+  opacity: 0.7;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+}
+
+/* ===== SCROLLBAR STYLING ===== */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--pixel-bg-dark);
+  border: 2px solid var(--pixel-muted);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--pixel-primary);
+  border: 2px solid var(--pixel-bg-dark);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--pixel-secondary);
+}
+
+/* ===== SELECTION STYLES ===== */
+::selection {
+  background: var(--pixel-primary);
+  color: var(--pixel-bg-dark);
+}
+
+/* ===== LAYER UTILITIES ===== */
+@layer utilities {
+  .text-shadow-pixel {
+    text-shadow: 2px 2px 0 var(--pixel-bg-dark);
+  }
+  
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+

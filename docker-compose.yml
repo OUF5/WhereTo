@@ -28,10 +28,10 @@ services:
     container_name: adventure-roulette-backend
     restart: unless-stopped
     ports:
-      - '3000:3000'
+      - '3001:3001'
     environment:
       NODE_ENV: development
-      PORT: 3000
+      PORT: 3001
       HOST: 0.0.0.0
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/adventure_roulette?schema=public
       JWT_SECRET: local-dev-secret-key-at-least-32-chars
