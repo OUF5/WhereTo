@@ -39,12 +39,14 @@ RUN chown -R fastify:nodejs /app
 
 USER fastify
 
-# Expose port
-EXPOSE 3000
+# Cloud Run injects PORT env var (default 8080)
+# We expose 8080 but the app reads from PORT env var
+EXPOSE 8080
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
+ENV PORT=8080
+
+# Note: Removed Docker HEALTHCHECK - Cloud Run manages its own health checks
+# via startup_probe and liveness_probe configured in the service
 
 # Start the application
 CMD ["node", "dist/app.js"]
