@@ -1,9 +1,7 @@
-// Only load dotenv in development (Cloud Run injects env vars directly)
-if (process.env.NODE_ENV !== 'production') {
-  await import('dotenv/config');
-}
-
 import { z } from 'zod';
+
+// dotenv is a no-op if .env doesn't exist, safe to import in production
+import 'dotenv/config';
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
