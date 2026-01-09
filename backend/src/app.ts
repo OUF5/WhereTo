@@ -17,8 +17,33 @@ const fastify = Fastify({
 
 // Register CORS
 await fastify.register(cors, {
-  origin: config.CORS_ORIGIN === '*' ? true : config.CORS_ORIGIN.split(','),
+  origin: (origin, cb) => {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) {
+      cb(null, true);
+      return;
+    }
+    
+    // In development or if CORS_ORIGIN is *, allow all
+    if (config.CORS_ORIGIN === '*') {
+      cb(null, true);
+      return;
+    }
+    
+    // Check if origin is in allowed list
+    const allowedOrigins = config.CORS_ORIGIN.split(',').map(o => o.trim());
+    if (allowedOrigins.includes(origin)) {
+      cb(null, true);
+      return;
+    }
+    
+    // Log rejected origin for debugging
+    console.log(`CORS rejected origin: ${origin}, allowed: ${allowedOrigins}`);
+    cb(null, false);
+  },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 });
 
 // Register auth plugin (JWT)
