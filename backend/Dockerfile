@@ -1,7 +1,10 @@
-# Build stage
-FROM node:20-alpine AS builder
+# Build stage - use Debian-based image for better Prisma compatibility
+FROM node:20-slim AS builder
 
 WORKDIR /app
+
+# Install OpenSSL (required for Prisma)
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 # Copy package files
 COPY package*.json ./
@@ -19,14 +22,17 @@ COPY . .
 # Build TypeScript
 RUN npm run build
 
-# Production stage
-FROM node:20-alpine AS runner
+# Production stage - use Debian-based image
+FROM node:20-slim AS runner
 
 WORKDIR /app
 
+# Install OpenSSL (required for Prisma at runtime)
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+
 # Create non-root user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 fastify
+RUN groupadd --system --gid 1001 nodejs
+RUN useradd --system --uid 1001 --gid nodejs fastify
 
 # Copy necessary files from builder
 COPY --from=builder /app/node_modules ./node_modules
@@ -40,13 +46,9 @@ RUN chown -R fastify:nodejs /app
 USER fastify
 
 # Cloud Run injects PORT env var (default 8080)
-# We expose 8080 but the app reads from PORT env var
 EXPOSE 8080
 
 ENV PORT=8080
-
-# Note: Removed Docker HEALTHCHECK - Cloud Run manages its own health checks
-# via startup_probe and liveness_probe configured in the service
 
 # Start the application
 CMD ["node", "dist/app.js"]
